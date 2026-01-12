@@ -1,0 +1,9 @@
+numpy
+pandas
+requests
+flask
+sqlalchemy
+pytest
+matplotlib
+scikit-learn
+-e .
