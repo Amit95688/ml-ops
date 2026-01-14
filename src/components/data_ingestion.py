@@ -57,6 +57,11 @@ if __name__ == "__main__":
     datatransformation = DataTransformation()
     train_arr,test_arr,_=datatransformation.initiate_data_transformation(train_data_path, test_data_path)
 
-    ModelTrainer=ModelTrainer()
-    print(ModelTrainer.initiate_model_trainer(train_arr, test_arr))
+    model_trainer=ModelTrainer()
+    # Enable hyperparameter tuning
+    model_trainer.model_trainer_config.use_hyperparameter_tuning = True
+    model_trainer.model_trainer_config.tuning_method = 'random'  # 'random' or 'grid'
+    model_trainer.model_trainer_config.cv_folds = 5
+    model_trainer.model_trainer_config.n_iter = 20
+    print(model_trainer.initiate_model_trainer(train_arr, test_arr))
     

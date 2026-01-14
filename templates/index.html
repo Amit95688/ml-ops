@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Make Prediction - MLOps Project</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .back-btn {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #667eea;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .back-btn:hover {
+            text-decoration: underline;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        input[type="number"],
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+        
+        input[type="number"]:focus,
+        input[type="text"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .form-row .form-group {
+            margin-bottom: 0;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+            border: 2px solid #e0e0e0;
+        }
+        
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+        
+        .result-box {
+            background: #f0f3ff;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+        
+        .result-box h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .result-text {
+            color: #555;
+            line-height: 1.8;
+            font-size: 16px;
+        }
+        
+        .error-box {
+            background: #ffe0e0;
+            border-left: 4px solid #ff6b6b;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+            color: #c92a2a;
+        }
+        
+        .sample-data {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .sample-data strong {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-btn">← Back to Home</a>
+        
+        <h1>🔮 Make Prediction</h1>
+        
+        {% if error %}
+            <div class="error-box">
+                <strong>Error:</strong> {{ error }}
+            </div>
+        {% endif %}
+        
+        {% if results %}
+            <div class="result-box">
+                <h3>✅ Prediction Result</h3>
+                <div class="result-text">
+                    <strong>Prediction:</strong> {{ results }}<br>
+                    <p style="margin-top: 10px; font-size: 14px; color: #888;">
+                        Model prediction completed successfully based on the input features.
+                    </p>
+                </div>
+            </div>
+        {% endif %}
+        
+        <div class="sample-data">
+            <strong>📋 Sample Input Values:</strong><br>
+            age: 35-65, balance: 500-10000, duration: 100-4000
+        </div>
+        
+        <form method="POST" action="/predict">
+            <h3 style="color: #333; margin-bottom: 20px; font-size: 16px;">Fill in the form to get predictions:</h3>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="age">Age:</label>
+                    <input type="number" id="age" name="age" placeholder="e.g., 45" required>
+                </div>
+                <div class="form-group">
+                    <label for="balance">Balance:</label>
+                    <input type="number" id="balance" name="balance" placeholder="e.g., 2500" required>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="duration">Duration (seconds):</label>
+                    <input type="number" id="duration" name="duration" placeholder="e.g., 1800" required>
+                </div>
+                <div class="form-group">
+                    <label for="campaign">Campaign:</label>
+                    <input type="number" id="campaign" name="campaign" placeholder="e.g., 2" required>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="pdays">Previous Days:</label>
+                    <input type="number" id="pdays" name="pdays" placeholder="e.g., 0" required>
+                </div>
+                <div class="form-group">
+                    <label for="previous">Previous Contacts:</label>
+                    <input type="number" id="previous" name="previous" placeholder="e.g., 0" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="job">Job Type:</label>
+                <select id="job" name="job" required>
+                    <option value="">Select Job Type</option>
+                    <option value="admin.">Admin</option>
+                    <option value="technician">Technician</option>
+                    <option value="services">Services</option>
+                    <option value="management">Management</option>
+                    <option value="retired">Retired</option>
+                    <option value="blue-collar">Blue Collar</option>
+                    <option value="unemployed">Unemployed</option>
+                    <option value="entrepreneur">Entrepreneur</option>
+                    <option value="housemaid">Housemaid</option>
+                    <option value="unknown">Unknown</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="marital">Marital Status:</label>
+                <select id="marital" name="marital" required>
+                    <option value="">Select Marital Status</option>
+                    <option value="married">Married</option>
+                    <option value="single">Single</option>
+                    <option value="divorced">Divorced</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="education">Education:</label>
+                <select id="education" name="education" required>
+                    <option value="">Select Education</option>
+                    <option value="primary">Primary</option>
+                    <option value="secondary">Secondary</option>
+                    <option value="tertiary">Tertiary</option>
+                    <option value="unknown">Unknown</option>
+                </select>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="month">Month:</label>
+                    <select id="month" name="month" required>
+                        <option value="">Select Month</option>
+                        <option value="jan">January</option>
+                        <option value="feb">February</option>
+                        <option value="mar">March</option>
+                        <option value="apr">April</option>
+                        <option value="may">May</option>
+                        <option value="jun">June</option>
+                        <option value="jul">July</option>
+                        <option value="aug">August</option>
+                        <option value="sep">September</option>
+                        <option value="oct">October</option>
+                        <option value="nov">November</option>
+                        <option value="dec">December</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="day">Day of Week:</label>
+                    <select id="day" name="day" required>
+                        <option value="">Select Day</option>
+                        <option value="mon">Monday</option>
+                        <option value="tue">Tuesday</option>
+                        <option value="wed">Wednesday</option>
+                        <option value="thu">Thursday</option>
+                        <option value="fri">Friday</option>
+                        <option value="sat">Saturday</option>
+                        <option value="sun">Sunday</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="loan">Loan:</label>
+                    <select id="loan" name="loan" required>
+                        <option value="">Select Loan Status</option>
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="housing">Housing:</label>
+                    <select id="housing" name="housing" required>
+                        <option value="">Select Housing Status</option>
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="default">Default:</label>
+                    <select id="default" name="default" required>
+                        <option value="">Select Default Status</option>
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="contact">Contact Type:</label>
+                    <select id="contact" name="contact" required>
+                        <option value="">Select Contact Type</option>
+                        <option value="cellular">Cellular</option>
+                        <option value="telephone">Telephone</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="poutcome">Previous Outcome:</label>
+                <select id="poutcome" name="poutcome" required>
+                    <option value="">Select Previous Outcome</option>
+                    <option value="success">Success</option>
+                    <option value="failure">Failure</option>
+                    <option value="other">Other</option>
+                    <option value="unknown">Unknown</option>
+                </select>
+                <button type="submit" class="btn btn-primary">🔮 Predict</button>
+                <button type="reset" class="btn btn-secondary">Clear</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

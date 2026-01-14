@@ -4,6 +4,7 @@ from dataclasses import dataclass
 import xgboost as xgb
 import lightgbm as lgbm
 from sklearn.metrics import roc_auc_score, accuracy_score, f1_score
+from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 import numpy as np
 import pandas as pd
 
@@ -20,9 +21,96 @@ from src.utils import save_object
 @dataclass
 class ModelTrainerConfig:
     model_obj_file_path: str = os.path.join('artifacts', 'model.pkl')
+    use_hyperparameter_tuning: bool = False
+    tuning_method: str = 'random'  # 'grid' or 'random'
+    cv_folds: int = 3
+    n_iter: int = 20  # for RandomizedSearchCV
 class ModelTrainer:
     def __init__(self):
         self.model_trainer_config = ModelTrainerConfig()
+
+    def _tune_xgboost(self, X_train, y_train):
+        """Hyperparameter tuning for XGBoost using RandomizedSearchCV"""
+        logging.info("Starting XGBoost hyperparameter tuning...")
+        
+        param_dist = {
+            'n_estimators': [50, 100, 200],
+            'learning_rate': [0.01, 0.05, 0.1, 0.15],
+            'max_depth': [3, 5, 7, 9],
+            'subsample': [0.6, 0.8, 1.0],
+            'colsample_bytree': [0.6, 0.8, 1.0],
+            'gamma': [0, 0.5, 1],
+        }
+        
+        base_model = xgb.XGBClassifier(eval_metric='logloss', random_state=42)
+        
+        if self.model_trainer_config.tuning_method == 'grid':
+            search = GridSearchCV(
+                base_model, 
+                param_dist, 
+                cv=self.model_trainer_config.cv_folds,
+                scoring='roc_auc',
+                n_jobs=-1,
+                verbose=1
+            )
+        else:  # random
+            search = RandomizedSearchCV(
+                base_model, 
+                param_dist, 
+                n_iter=self.model_trainer_config.n_iter,
+                cv=self.model_trainer_config.cv_folds,
+                scoring='roc_auc',
+                n_jobs=-1,
+                random_state=42,
+                verbose=1
+            )
+        
+        search.fit(X_train, y_train)
+        logging.info(f"Best XGBoost params: {search.best_params_}")
+        logging.info(f"Best XGBoost CV score: {search.best_score_:.4f}")
+        return search.best_estimator_
+
+    def _tune_lightgbm(self, X_train, y_train):
+        """Hyperparameter tuning for LightGBM using RandomizedSearchCV"""
+        logging.info("Starting LightGBM hyperparameter tuning...")
+        
+        param_dist = {
+            'n_estimators': [50, 100, 200],
+            'learning_rate': [0.01, 0.05, 0.1, 0.15],
+            'num_leaves': [20, 31, 50, 100],
+            'subsample': [0.6, 0.8, 1.0],
+            'colsample_bytree': [0.6, 0.8, 1.0],
+            'reg_alpha': [0, 0.1, 1.0],
+            'reg_lambda': [0, 0.1, 1.0],
+        }
+        
+        base_model = lgbm.LGBMClassifier(random_state=42, verbose=-1)
+        
+        if self.model_trainer_config.tuning_method == 'grid':
+            search = GridSearchCV(
+                base_model, 
+                param_dist, 
+                cv=self.model_trainer_config.cv_folds,
+                scoring='roc_auc',
+                n_jobs=-1,
+                verbose=1
+            )
+        else:  # random
+            search = RandomizedSearchCV(
+                base_model, 
+                param_dist, 
+                n_iter=self.model_trainer_config.n_iter,
+                cv=self.model_trainer_config.cv_folds,
+                scoring='roc_auc',
+                n_jobs=-1,
+                random_state=42,
+                verbose=1
+            )
+        
+        search.fit(X_train, y_train)
+        logging.info(f"Best LightGBM params: {search.best_params_}")
+        logging.info(f"Best LightGBM CV score: {search.best_score_:.4f}")
+        return search.best_estimator_
 
     def initiate_model_trainer(self, train_array, test_array):
         logging.info("Model Trainer method starts")
@@ -72,7 +160,14 @@ class ModelTrainer:
                 logging.info(f"Training {model_name}")
 
                 try:
-                    model.fit(X_train, y_train_proc)
+                    # Apply hyperparameter tuning if enabled
+                    if self.model_trainer_config.use_hyperparameter_tuning:
+                        if model_name == "XGB":
+                            model = self._tune_xgboost(X_train, y_train_proc)
+                        elif model_name == "LGBM":
+                            model = self._tune_lightgbm(X_train, y_train_proc)
+                    else:
+                        model.fit(X_train, y_train_proc)
                 except Exception as me:
                     logging.error(f"Training failed for {model_name}: {me}")
                     # skip this model on failure

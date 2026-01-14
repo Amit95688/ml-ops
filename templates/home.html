@@ -1,0 +1,174 @@
+<!DOCTYPE html> 
+<html lang="en">    
+<head>        
+    <meta charset="UTF-8">        
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">        
+    <title>MLOps Project - Home</title>    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            max-width: 800px;
+            width: 90%;
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .feature-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            text-align: center;
+        }
+        
+        .feature-card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .feature-card p {
+            color: #555;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+            border: 2px solid #667eea;
+        }
+        
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .info-section {
+            background: #f0f3ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .info-section h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .info-section p {
+            color: #555;
+            line-height: 1.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 MLOps Project</h1>
+        <p class="subtitle">Machine Learning Operations Pipeline with Hyperparameter Tuning</p>
+        
+        <div class="features">
+            <div class="feature-card">
+                <h3>📊 Data Processing</h3>
+                <p>Automated data ingestion, cleaning, and transformation pipeline</p>
+            </div>
+            
+            <div class="feature-card">
+                <h3>🤖 Model Training</h3>
+                <p>Advanced hyperparameter tuning with GridSearch & RandomSearch</p>
+            </div>
+            
+            <div class="feature-card">
+                <h3>📈 Model Evaluation</h3>
+                <p>Comprehensive metrics including AUC, Accuracy, and F1-Score</p>
+            </div>
+            
+            <div class="feature-card">
+                <h3>🔮 Predictions</h3>
+                <p>Real-time predictions using the best trained model</p>
+            </div>
+        </div>
+        
+        <div class="action-buttons">
+            <a href="/predict" class="btn btn-primary">Make Prediction</a>
+            <a href="#" class="btn btn-secondary">View Metrics</a>
+        </div>
+        
+        <div class="info-section">
+            <h3>📝 How to Use</h3>
+            <p>
+                1. Click "Make Prediction" to use the trained model<br>
+                2. Fill in the required features<br>
+                3. Get instant predictions with confidence scores<br>
+                <br>
+                The model was trained with hyperparameter tuning to achieve optimal performance.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
