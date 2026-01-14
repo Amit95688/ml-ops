@@ -1,10 +1,11 @@
-numpy
-pandas
-requests
-flask
-sqlalchemy
-pytest
-matplotlib
-scikit-learn
-torch
+numpy>=1.18.0
+pandas>=1.0.0
+scikit-learn>=0.22.0
+matplotlib>=3.1.0
+seaborn>=0.10.0
+joblib>=0.14.0
+Flask>=2.0.0
+xgboost>=1.5.0
+lightgbm>=3.3.0
+dill>=0.3.4
 -e .
