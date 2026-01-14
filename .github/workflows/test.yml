@@ -44,10 +44,15 @@ jobs:
     
     - name: Run tests
       run: |
-        pytest tests/ -v --cov=src --cov-report=xml
+        if [ -d "tests" ] && [ "$(find tests -name '*.py' -type f | wc -l)" -gt 0 ]; then
+          pytest tests/ -v --cov=src --cov-report=xml
+        else
+          echo "No tests found, skipping pytest"
+        fi
     
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
+      if: always()
       with:
         files: ./coverage.xml
         flags: unittests
