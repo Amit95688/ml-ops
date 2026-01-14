@@ -7,6 +7,10 @@ from sklearn.metrics import roc_auc_score, accuracy_score, f1_score
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 import numpy as np
 import pandas as pd
+import mlflow
+import mlflow.xgboost
+import mlflow.lightgbm
+import mlflow.sklearn
 
 
 # Add project root to sys.path for direct execution
@@ -16,6 +20,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../.
 from src.exception import CustomException
 from src.logger.logger import logging
 from src.utils import save_object
+from src.config.mlflow_config import MLflowConfig
 # no direct dependency on DataTransformation artifacts required here
 
 @dataclass
@@ -160,16 +165,33 @@ class ModelTrainer:
                 logging.info(f"Training {model_name}")
 
                 try:
+                    # Start MLflow run for this model
+                    mlflow.start_run(run_name=f"{model_name}_training")
+                    
+                    # Log model name
+                    mlflow.set_tag("model_type", model_name)
+                    mlflow.log_param("use_hyperparameter_tuning", self.model_trainer_config.use_hyperparameter_tuning)
+                    
                     # Apply hyperparameter tuning if enabled
                     if self.model_trainer_config.use_hyperparameter_tuning:
+                        mlflow.log_param("tuning_method", self.model_trainer_config.tuning_method)
+                        mlflow.log_param("cv_folds", self.model_trainer_config.cv_folds)
+                        mlflow.log_param("n_iter", self.model_trainer_config.n_iter)
+                        
                         if model_name == "XGB":
                             model = self._tune_xgboost(X_train, y_train_proc)
                         elif model_name == "LGBM":
                             model = self._tune_lightgbm(X_train, y_train_proc)
+                        
+                        # Log best parameters from tuning
+                        if hasattr(model, 'get_params'):
+                            mlflow.log_params(model.get_params())
                     else:
                         model.fit(X_train, y_train_proc)
+                        
                 except Exception as me:
                     logging.error(f"Training failed for {model_name}: {me}")
+                    mlflow.end_run()
                     # skip this model on failure
                     continue
 
@@ -186,6 +208,17 @@ class ModelTrainer:
                 acc = float(accuracy_score(y_test_proc, y_pred))
                 f1 = float(f1_score(y_test_proc, y_pred))
                 trained_models[model_name] = model
+                
+                # Log metrics to MLflow
+                mlflow.log_metric("auc", auc if auc is not None else 0.0)
+                mlflow.log_metric("accuracy", acc)
+                mlflow.log_metric("f1_score", f1)
+                
+                # Log model to MLflow
+                if model_name == "XGB":
+                    mlflow.xgboost.log_model(model, artifact_path=f"model_{model_name}")
+                elif model_name == "LGBM":
+                    mlflow.lightgbm.log_model(model, artifact_path=f"model_{model_name}")
 
                 # use -1.0 for missing AUC so sorting works
                 auc_for_sort = auc if auc is not None else -1.0
@@ -198,6 +231,7 @@ class ModelTrainer:
                 })
 
                 logging.info(f"{model_name} AUC: {auc}, Accuracy: {acc}, F1: {f1}")
+                mlflow.end_run()
 
             # select best model by AUC
             best = sorted(model_scores, key=lambda x: x["auc"], reverse=True)[0]
