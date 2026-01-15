@@ -481,7 +481,7 @@ This project is licensed under the MIT License - see [LICENSE](LICENSE) file.
 **Amit Dubey**
 
 [![GitHub](https://img.shields.io/badge/GitHub-Amit95688-181717?style=for-the-badge&logo=github)](https://github.com/Amit95688)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0077B5?style=for-the-badge&logo=linkedin)](https://linkedin.com/in/amit-dubey)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0077B5?style=for-the-badge&logo=linkedin)](https://www.linkedin.com/in/amit-dubey-45292629a/)
 
 ---
 
