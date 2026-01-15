@@ -21,11 +21,11 @@
 
 <div align="center">
 
-| Model | AUC-ROC | Accuracy | F1-Score | Training Time |
-|-------|---------|----------|----------|---------------|
-| **LightGBM** | **0.97** | 94.2% | 0.93 | <30s |
-| **XGBoost** | 0.96 | 93.8% | 0.92 | <30s |
-| **PyTorch FNN** | 0.95 | 93.1% | 0.91 | <2min |
+| Model | AUC-ROC | Accuracy | F1-Score | 
+|-------|---------|----------|----------|
+| **LightGBM** | **0.97** | 94.2% | 0.93 |
+| **XGBoost** | 0.96 | 93.8% | 0.92 | 
+| **PyTorch FNN** | 0.95 | 93.1% | 0.91 | 
 
 </div>
 
