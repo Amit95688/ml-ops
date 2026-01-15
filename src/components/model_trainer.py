@@ -3,7 +3,7 @@ import sys
 from dataclasses import dataclass
 import xgboost as xgb
 import lightgbm as lgbm
-from sklearn.metrics import roc_auc_score, accuracy_score, f1_score
+from sklearn.metrics import roc_auc_score, accuracy_score, f1_score, confusion_matrix, roc_curve, auc
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 import numpy as np
 import pandas as pd
@@ -11,6 +11,7 @@ import mlflow
 import mlflow.xgboost
 import mlflow.lightgbm
 import mlflow.sklearn
+import matplotlib.pyplot as plt
 
 
 # Add project root to sys.path for direct execution
@@ -21,6 +22,7 @@ from src.exception import CustomException
 from src.logger.logger import logging
 from src.utils import save_object
 from src.config.mlflow_config import MLflowConfig
+from src.utils_viz import plot_confusion_matrix, plot_roc_curve
 # no direct dependency on DataTransformation artifacts required here
 
 @dataclass
@@ -28,23 +30,21 @@ class ModelTrainerConfig:
     model_obj_file_path: str = os.path.join('artifacts', 'model.pkl')
     use_hyperparameter_tuning: bool = False
     tuning_method: str = 'random'  # 'grid' or 'random'
-    cv_folds: int = 3
-    n_iter: int = 20  # for RandomizedSearchCV
+    cv_folds: int = 2  
+    n_iter: int = 3  
 class ModelTrainer:
     def __init__(self):
         self.model_trainer_config = ModelTrainerConfig()
 
     def _tune_xgboost(self, X_train, y_train):
-        """Hyperparameter tuning for XGBoost using RandomizedSearchCV"""
+        """Hyperparameter tuning for XGBoost using RandomizedSearchCV - !"""
         logging.info("Starting XGBoost hyperparameter tuning...")
         
+        # MINIMAL PARAMS FOR SPEED
         param_dist = {
-            'n_estimators': [50, 100, 200],
-            'learning_rate': [0.01, 0.05, 0.1, 0.15],
-            'max_depth': [3, 5, 7, 9],
-            'subsample': [0.6, 0.8, 1.0],
-            'colsample_bytree': [0.6, 0.8, 1.0],
-            'gamma': [0, 0.5, 1],
+            'n_estimators': [50, 100],
+            'max_depth': [3, 5],
+            'learning_rate': [0.05, 0.1],
         }
         
         base_model = xgb.XGBClassifier(eval_metric='logloss', random_state=42)
@@ -76,17 +76,14 @@ class ModelTrainer:
         return search.best_estimator_
 
     def _tune_lightgbm(self, X_train, y_train):
-        """Hyperparameter tuning for LightGBM using RandomizedSearchCV"""
-        logging.info("Starting LightGBM hyperparameter tuning...")
+        """Hyperparameter tuning for LightGBM using RandomizedSearchCV - ULTRA FAST!"""
+        logging.info("Starting LightGBM hyperparameter tuning (FAST mode - 3 iterations only)...")
         
+        # MINIMAL PARAMS FOR SPEED
         param_dist = {
-            'n_estimators': [50, 100, 200],
-            'learning_rate': [0.01, 0.05, 0.1, 0.15],
-            'num_leaves': [20, 31, 50, 100],
-            'subsample': [0.6, 0.8, 1.0],
-            'colsample_bytree': [0.6, 0.8, 1.0],
-            'reg_alpha': [0, 0.1, 1.0],
-            'reg_lambda': [0, 0.1, 1.0],
+            'n_estimators': [50, 100],
+            'num_leaves': [20, 31],
+            'learning_rate': [0.05, 0.1],
         }
         
         base_model = lgbm.LGBMClassifier(random_state=42, verbose=-1)
@@ -130,9 +127,10 @@ class ModelTrainer:
             y_train = np.asarray(y_train)
             y_test = np.asarray(y_test)
 
+            # FAST BASELINE MODELS - optimized for speed
             models = [
-                ("XGB", xgb.XGBClassifier(eval_metric='logloss')),
-                ("LGBM", lgbm.LGBMClassifier()),
+                ("XGB", xgb.XGBClassifier(n_estimators=50, max_depth=5, learning_rate=0.1, eval_metric='logloss', tree_method='hist', random_state=42)),
+                ("LGBM", lgbm.LGBMClassifier(n_estimators=50, num_leaves=31, learning_rate=0.1, verbose=-1, random_state=42)),
             ]
 
             trained_models = {}
@@ -213,6 +211,19 @@ class ModelTrainer:
                 mlflow.log_metric("auc", auc if auc is not None else 0.0)
                 mlflow.log_metric("accuracy", acc)
                 mlflow.log_metric("f1_score", f1)
+                
+                # Log visualizations to MLflow
+                try:
+                    plot_confusion_matrix(y_test_proc, y_pred, model_name)
+                    logging.info(f"✓ Logged confusion matrix for {model_name}")
+                except Exception as e:
+                    logging.warning(f"Could not plot confusion matrix: {e}")
+                
+                try:
+                    plot_roc_curve(y_test_proc, y_pred_probs, model_name)
+                    logging.info(f"✓ Logged ROC curve for {model_name}")
+                except Exception as e:
+                    logging.warning(f"Could not plot ROC curve: {e}")
                 
                 # Log model to MLflow
                 if model_name == "XGB":
