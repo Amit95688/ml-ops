@@ -39,6 +39,22 @@ All models tracked with **MLflow** including:
 
 ---
 
+## 📸 Screenshots
+
+### MLflow Experiment Tracking
+![MLflow UI](screenshot/mlflow.png)
+*MLflow dashboard showing model metrics, parameters, and experiment history*
+
+### Airflow DAG Orchestration
+![Airflow DAG](screenshot/Airflow.png)
+*Airflow DAG visualization with 6-task pipeline and execution logs*
+
+### GitHub Actions CI/CD
+![GitHub Actions](screenshot/cicd.png)
+*Automated CI/CD pipeline with lint, test, build, and deployment stages*
+
+---
+
 ## ✨ Features
 
 ### 🔄 **End-to-End ML Pipeline**
